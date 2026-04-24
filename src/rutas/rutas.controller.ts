@@ -41,16 +41,16 @@ export class RutasController {
     return this.rutasService.findRutaByCodigo(codigo);
   }
 
-  @ApiOperation({ summary: 'Buscar una ruta por id' })
+  @ApiOperation({ summary: 'Buscar una ruta por codigo' })
   @ApiParam({
-    name: 'id',
-    example: '550e8400-e29b-41d4-a716-446655440000',
+    name: 'codigo',
+    example: 'A'
   })
-  @Get(':id')
+  @Get('codigo/:codigo')
   findOne(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('codigo') codigo: string,
   ): Promise<BaseResponseDto<Rutas>> {
-    return this.rutasService.findOne(id);
+    return this.rutasService.findOne(codigo);
   }
 
   @ApiOperation({ summary: 'Actualizar una ruta por id' })
