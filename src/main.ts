@@ -20,6 +20,7 @@ async function bootstrap() {
     .setTitle('Metropolitano API')
     .setDescription('API para el sistema de transporte metropolitano')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('metropolitano')
     .build();
   // Aquí puedes configurar SwaggerModule para generar la documentación de la API

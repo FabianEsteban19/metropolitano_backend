@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MinLength,
   MaxLength,
 } from 'class-validator';
 
@@ -25,13 +26,13 @@ export class CreateUsuarioDto {
   email!: string;
 
   @ApiProperty({
-    example: '$2b$10$abcdefghijklmnopqrstuv',
-    description:
-      'Hash de la contrasena. Si luego implementas autenticacion, conviene recibir password plano y hashearlo en el service.',
+    example: 'MiClaveSegura123',
+    description: 'Contrasena en texto plano. El backend la guarda hasheada.',
   })
   @IsString()
   @IsNotEmpty()
-  passwordHash!: string;
+  @MinLength(8)
+  password!: string;
 
   @ApiPropertyOptional({
     example: 'Ana Flores',

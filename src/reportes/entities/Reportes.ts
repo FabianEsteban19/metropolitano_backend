@@ -10,6 +10,7 @@ import {
 } from "typeorm";
 
 @Index("idx_reportes_bus_ts", ["busId", "timestamp"], {})
+@Index("idx_reportes_active", ["isActive"], {})
 @Index("reportes_pkey", ["id"], { unique: true })
 @Index("idx_reportes_ts", ["timestamp"], {})
 @Entity("reportes", { schema: "public" })
@@ -53,6 +54,9 @@ export class Reportes {
     scale: 2,
   })
   velocidadKmh!: string | null;
+
+  @Column("boolean", { name: "is_active", default: () => "true" })
+  isActive!: boolean;
 
   @ManyToOne(() => Buses, (buses) => buses.reportes, { onDelete: "CASCADE" })
   @JoinColumn([{ name: "bus_id", referencedColumnName: "id" }])

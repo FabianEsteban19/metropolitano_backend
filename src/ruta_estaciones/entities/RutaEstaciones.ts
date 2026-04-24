@@ -4,6 +4,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
 
 
 @Index("ruta_estaciones_pkey", ["estacionId", "rutaId"], { unique: true })
+@Index("idx_ruta_estaciones_active", ["isActive"], {})
 @Entity("ruta_estaciones", { schema: "public" })
 export class RutaEstaciones {
   @Column("uuid", { primary: true, name: "ruta_id" })
@@ -14,6 +15,9 @@ export class RutaEstaciones {
 
   @Column("integer", { name: "orden" })
   orden!: number;
+
+  @Column("boolean", { name: "is_active", default: () => "true" })
+  isActive!: boolean;
 
   @ManyToOne(() => Estaciones, (estaciones) => estaciones.rutaEstaciones, {
     onDelete: "CASCADE",

@@ -11,6 +11,7 @@ import { ViajeEstacionesModule } from './viaje_estaciones/viaje_estaciones.modul
 import { ViajesModule } from './viajes/viajes.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     UsuarioModule,
     ViajesModule,
     ViajeEstacionesModule,
+    AuthModule,
     
   ],
   controllers: [AppController],
