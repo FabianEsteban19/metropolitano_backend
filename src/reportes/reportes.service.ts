@@ -20,8 +20,10 @@ import { Reportes } from './entities/Reportes';
 @Injectable()
 export class ReportesService {
   constructor(
+    //TODO SOLO FALTA IMPLEMENTAR LOS SERVICES ADICIONALES, YA QUE ACTUALMENTE TENEMOS METODOS CREADOS.
     @InjectRepository(Reportes)
     private readonly reportesRepository: Repository<Reportes>,
+    //TODO CAMBIARLO POR SU SERVICE CON LOS METODOS CORRESPONDIENTES
     @InjectRepository(Buses)
     private readonly busesRepository: Repository<Buses>,
     @InjectRepository(Estaciones)

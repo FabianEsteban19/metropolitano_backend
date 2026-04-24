@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/auth/public.decorator';
 import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { UpdateRutaDto } from './dto/update-ruta.dto';
@@ -27,6 +28,7 @@ export class RutasController {
   }
 
   @ApiOperation({ summary: 'Listar todas las rutas activas' })
+  @Public()
   @Get()
   findAll(): Promise<BaseResponseDto<Rutas[]>> {
     return this.rutasService.findAll();

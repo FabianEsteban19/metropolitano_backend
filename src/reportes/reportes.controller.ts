@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/auth/public.decorator';
 import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { ReportesService } from './reportes.service';
 import { CreateReporteDto } from './dto/create-reporte.dto';
@@ -29,6 +30,7 @@ export class ReportesController {
   }
 
   @ApiOperation({ summary: 'Listar todos los reportes activos' })
+  @Public()
   @Get()
   findAll(): Promise<BaseResponseDto<Reportes[]>> {
     return this.reportesService.findAll();

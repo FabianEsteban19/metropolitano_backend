@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/auth/public.decorator';
 import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { CreateEstacioneDto } from './dto/create-estacione.dto';
 import { UpdateEstacioneDto } from './dto/update-estacione.dto';
@@ -29,6 +30,7 @@ export class EstacionesController {
   }
 
   @ApiOperation({ summary: 'Listar todas las estaciones activas' })
+  @Public()
   @Get()
   findAll(): Promise<BaseResponseDto<Estaciones[]>> {
     return this.estacionesService.findAll();

@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/auth/public.decorator';
 import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { RutaEstacionesService } from './ruta_estaciones.service';
 import { CreateRutaEstacioneDto } from './dto/create-ruta_estacione.dto';
@@ -51,6 +52,7 @@ export class RutaEstacionesController {
     name: 'rutaId',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
+  @Public()
   @Get('ruta/:rutaId')
   findByRuta(
     @Param('rutaId', new ParseUUIDPipe()) rutaId: string,

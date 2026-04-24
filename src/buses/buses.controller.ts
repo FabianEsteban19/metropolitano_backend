@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/auth/public.decorator';
 import { BusesService } from './buses.service';
 import { CreateBusDto } from './dto/create-bus.dto';
 import { UpdateBusDto } from './dto/update-bus.dto';
@@ -27,6 +28,7 @@ export class BusesController {
   }
 
   @ApiOperation({ summary: 'Listar todos los buses activos' })
+  @Public()
   @Get()
   findAll(): Promise<BaseResponseDto<Buses[]>> {
     return this.busesService.findAll();
