@@ -12,15 +12,15 @@ export class RutaEstacionesService {
     return `This action returns all rutaEstaciones`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} rutaEstacione`;
   }
 
-  update(id: number, updateRutaEstacioneDto: UpdateRutaEstacioneDto) {
+  update(id: string, updateRutaEstacioneDto: UpdateRutaEstacioneDto) {
     return `This action updates a #${id} rutaEstacione`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} rutaEstacione`;
   }
 }

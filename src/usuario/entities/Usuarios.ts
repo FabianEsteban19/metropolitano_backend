@@ -4,7 +4,7 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 @Index("usuarios_pkey", ["id"], { unique: true })
 @Entity("usuarios", { schema: "public" })
 export class Usuarios {
-  @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id!: string;
 
   @Column("character varying", { name: "email", unique: true, length: 120 })

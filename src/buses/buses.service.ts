@@ -12,15 +12,15 @@ export class BusesService {
     return `This action returns all buses`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} bus`;
   }
 
-  update(id: number, updateBusDto: UpdateBusDto) {
+  update(id: string, updateBusDto: UpdateBusDto) {
     return `This action updates a #${id} bus`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} bus`;
   }
 }

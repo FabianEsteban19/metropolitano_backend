@@ -12,7 +12,7 @@ import {
 @Index("rutas_pkey", ["id"], { unique: true })
 @Entity("rutas", { schema: "public" })
 export class Rutas {
-  @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id!: string;
 
   @Column("character varying", { name: "codigo", unique: true, length: 10 })

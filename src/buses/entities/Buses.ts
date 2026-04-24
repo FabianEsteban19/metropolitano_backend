@@ -17,7 +17,7 @@ import {
 @Index("idx_buses_ruta", ["rutaId"], {})
 @Entity("buses", { schema: "public" })
 export class Buses {
-  @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id!: string;
 
   @Column("character varying", { name: "codigo", unique: true, length: 20 })
@@ -34,7 +34,7 @@ export class Buses {
   })
   placa!: string | null;
 
-  @Column("bigint", { name: "ruta_id", nullable: true })
+  @Column("uuid", { name: "ruta_id", nullable: true })
   rutaId!: string | null;
 
   @Column("enum", {

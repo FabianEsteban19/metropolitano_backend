@@ -19,16 +19,16 @@ export class RutaEstacionesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.rutaEstacionesService.findOne(+id);
+    return this.rutaEstacionesService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRutaEstacioneDto: UpdateRutaEstacioneDto) {
-    return this.rutaEstacionesService.update(+id, updateRutaEstacioneDto);
+    return this.rutaEstacionesService.update(id, updateRutaEstacioneDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.rutaEstacionesService.remove(+id);
+    return this.rutaEstacionesService.remove(id);
   }
 }

@@ -14,11 +14,14 @@ import {
 @Index("idx_reportes_ts", ["timestamp"], {})
 @Entity("reportes", { schema: "public" })
 export class Reportes {
-  @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id!: string;
 
-  @Column("bigint", { name: "bus_id" })
+  @Column("uuid", { name: "bus_id" })
   busId!: string;
+
+  @Column("uuid", { name: "estacion_id", nullable: true })
+  estacionId!: string | null;
 
   @Column("numeric", { name: "latitud", precision: 10, scale: 7 })
   latitud!: string;

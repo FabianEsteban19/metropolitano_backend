@@ -11,7 +11,7 @@ import {
 @Index("estaciones_pkey", ["id"], { unique: true })
 @Entity("estaciones", { schema: "public" })
 export class Estaciones {
-  @PrimaryGeneratedColumn({ type: "bigint", name: "id" })
+  @PrimaryGeneratedColumn("uuid", { name: "id" })
   id!: string;
 
   @Column("character varying", { name: "nombre", length: 100 })
