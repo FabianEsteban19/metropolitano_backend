@@ -1,5 +1,6 @@
 import { Reportes } from "src/reportes/entities/Reportes";
 import { Rutas } from "src/rutas/entities/Rutas";
+import { Viajes } from "src/viajes/entities/Viajes";
 import {
   Column,
   Entity,
@@ -50,10 +51,16 @@ export class Buses {
   })
   createdAt!: Date;
 
+  @Column("boolean", { name: "is_active", default: () => "true" })
+  isActive!: boolean;
+
   @ManyToOne(() => Rutas, (rutas) => rutas.buses, { onDelete: "SET NULL" })
   @JoinColumn([{ name: "ruta_id", referencedColumnName: "id" }])
   ruta!: Rutas;
   
   @OneToMany(() => Reportes, (reportes) => reportes.bus)
   reportes!: Reportes[];
+
+  @OneToMany(() => Viajes, (viajes) => viajes.bus)
+  viajes!: Viajes[];
 }

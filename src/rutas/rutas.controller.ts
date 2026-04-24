@@ -9,11 +9,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { RutasService } from './rutas.service';
+import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { UpdateRutaDto } from './dto/update-ruta.dto';
-import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { Rutas } from './entities/Rutas';
+import { RutasService } from './rutas.service';
 
 @ApiTags('rutas')
 @Controller('rutas')
@@ -26,13 +26,13 @@ export class RutasController {
     return this.rutasService.create(createRutaDto);
   }
 
-  @ApiOperation({ summary: 'Listar todas las rutas' })
+  @ApiOperation({ summary: 'Listar todas las rutas activas' })
   @Get()
   findAll(): Promise<BaseResponseDto<Rutas[]>> {
     return this.rutasService.findAll();
   }
 
-  @ApiOperation({ summary: 'Buscar una ruta por codigo' })
+  @ApiOperation({ summary: 'Buscar una ruta activa por codigo' })
   @ApiParam({ name: 'codigo', example: 'A' })
   @Get('codigo/:codigo')
   findByCodigo(
@@ -41,19 +41,31 @@ export class RutasController {
     return this.rutasService.findRutaByCodigo(codigo);
   }
 
-  @ApiOperation({ summary: 'Buscar una ruta por codigo' })
+  @ApiOperation({ summary: 'Buscar una ruta activa por id' })
   @ApiParam({
-    name: 'codigo',
-    example: 'A'
+    name: 'id',
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @Get('codigo/:codigo')
+  @Get(':id')
   findOne(
-    @Param('codigo') codigo: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<BaseResponseDto<Rutas>> {
-    return this.rutasService.findOne(codigo);
+    return this.rutasService.findOne(id);
   }
 
-  @ApiOperation({ summary: 'Actualizar una ruta por id' })
+  @ApiOperation({ summary: 'Restaurar una ruta inactiva' })
+  @ApiParam({
+    name: 'id',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @Patch(':id/restore')
+  restore(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<BaseResponseDto<Rutas>> {
+    return this.rutasService.restore(id);
+  }
+
+  @ApiOperation({ summary: 'Actualizar una ruta activa por id' })
   @ApiParam({
     name: 'id',
     example: '550e8400-e29b-41d4-a716-446655440000',
@@ -66,7 +78,7 @@ export class RutasController {
     return this.rutasService.update(id, updateRutaDto);
   }
 
-  @ApiOperation({ summary: 'Eliminar una ruta por id' })
+  @ApiOperation({ summary: 'Desactivar una ruta por id' })
   @ApiParam({
     name: 'id',
     example: '550e8400-e29b-41d4-a716-446655440000',

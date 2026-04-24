@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
+import { Repository } from 'typeorm';
+import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { CreateEstacioneDto } from './dto/create-estacione.dto';
 import { UpdateEstacioneDto } from './dto/update-estacione.dto';
-import { Repository } from 'typeorm';
 import { Estaciones } from './entities/Estaciones';
-import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 
 @Injectable()
 export class EstacionesService {
@@ -30,7 +30,7 @@ export class EstacionesService {
       const estacionGuardada =
         await this.estacionesRepository.save(nuevaEstacion);
 
-      return BaseResponseDto.success<Estaciones>(
+      return BaseResponseDto.success(
         'Estacion creada correctamente',
         estacionGuardada,
       );
@@ -42,6 +42,7 @@ export class EstacionesService {
   async findAll(): Promise<BaseResponseDto<Estaciones[]>> {
     try {
       const estaciones = await this.estacionesRepository.find({
+        where: { isActive: true },
         order: { orden: 'ASC', id: 'ASC' },
       });
 
@@ -50,7 +51,7 @@ export class EstacionesService {
           ? 'Estaciones obtenidas correctamente'
           : 'No hay estaciones registradas';
 
-      return BaseResponseDto.success<Estaciones[]>(message, estaciones);
+      return BaseResponseDto.success(message, estaciones);
     } catch (error) {
       this.handleUnexpectedError(error, 'Error al obtener las estaciones');
     }
@@ -62,10 +63,7 @@ export class EstacionesService {
 
       const estacion = await this.findEstacionEntityOrFail(id);
 
-      return BaseResponseDto.success<Estaciones>(
-        'Estacion encontrada',
-        estacion,
-      );
+      return BaseResponseDto.success('Estacion encontrada', estacion);
     } catch (error) {
       this.handleUnexpectedError(error, 'Error al obtener la estacion');
     }
@@ -92,7 +90,7 @@ export class EstacionesService {
       );
       const estacionActualizada = await this.estacionesRepository.save(estacion);
 
-      return BaseResponseDto.confirmation<Estaciones>(
+      return BaseResponseDto.confirmation(
         'Estacion actualizada correctamente',
         estacionActualizada,
       );
@@ -106,21 +104,48 @@ export class EstacionesService {
       this.validateId(id);
 
       const estacion = await this.findEstacionEntityOrFail(id);
+      estacion.isActive = false;
 
-      await this.estacionesRepository.remove(estacion);
+      const estacionDesactivada = await this.estacionesRepository.save(estacion);
 
-      return BaseResponseDto.confirmation<Estaciones>(
-        'Estacion eliminada correctamente',
-        estacion,
+      return BaseResponseDto.confirmation(
+        'Estacion desactivada correctamente',
+        estacionDesactivada,
       );
     } catch (error) {
-      this.handleUnexpectedError(error, 'Error al eliminar la estacion');
+      this.handleUnexpectedError(error, 'Error al desactivar la estacion');
     }
   }
 
-  private async findEstacionEntityOrFail(id: string): Promise<Estaciones> {
+  async restore(id: string): Promise<BaseResponseDto<Estaciones>> {
+    try {
+      this.validateId(id);
+
+      const estacion = await this.findEstacionEntityOrFail(id, true);
+
+      if (estacion.isActive) {
+        throw new BadRequestException('La estacion ya se encuentra activa');
+      }
+
+      estacion.isActive = true;
+
+      const estacionRestaurada = await this.estacionesRepository.save(estacion);
+
+      return BaseResponseDto.confirmation(
+        'Estacion restaurada correctamente',
+        estacionRestaurada,
+      );
+    } catch (error) {
+      this.handleUnexpectedError(error, 'Error al restaurar la estacion');
+    }
+  }
+
+  private async findEstacionEntityOrFail(
+    id: string,
+    includeInactive = false,
+  ): Promise<Estaciones> {
     const estacion = await this.estacionesRepository.findOne({
-      where: { id },
+      where: includeInactive ? { id } : { id, isActive: true },
     });
 
     if (!estacion) {
@@ -145,6 +170,7 @@ export class EstacionesService {
       latitud: dto.latitud.toString(),
       longitud: dto.longitud.toString(),
       orden: dto.orden,
+      isActive: true,
     };
   }
 

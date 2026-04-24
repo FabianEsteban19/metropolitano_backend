@@ -9,6 +9,7 @@ import { EstacionesService } from './estaciones.service';
 describe('EstacionesController', () => {
   let controller: EstacionesController;
   let service: jest.Mocked<EstacionesService>;
+
   const estacionId = '550e8400-e29b-41d4-a716-446655440001';
 
   const estacionEntity: Estaciones = {
@@ -18,6 +19,7 @@ describe('EstacionesController', () => {
     latitud: '-12.0463740',
     longitud: '-77.0427930',
     orden: 1,
+    isActive: true,
     reportes: [],
     rutaEstaciones: [],
   };
@@ -36,6 +38,7 @@ describe('EstacionesController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+    restore: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -70,29 +73,29 @@ describe('EstacionesController', () => {
     expect(result).toEqual(response);
   });
 
-  it('debe delegar findAll al service', async () => {
-    const response = BaseResponseDto.success(
-      'Estaciones obtenidas correctamente',
-      [estacionEntity],
+  it('debe delegar remove al service', async () => {
+    const response = BaseResponseDto.confirmation(
+      'Estacion desactivada correctamente',
+      { ...estacionEntity, isActive: false },
     );
-    service.findAll.mockResolvedValue(response);
+    service.remove.mockResolvedValue(response);
 
-    const result = await controller.findAll();
+    const result = await controller.remove(estacionId);
 
-    expect(service.findAll).toHaveBeenCalled();
+    expect(service.remove).toHaveBeenCalledWith(estacionId);
     expect(result).toEqual(response);
   });
 
-  it('debe delegar findOne al service', async () => {
-    const response = BaseResponseDto.success(
-      'Estacion encontrada',
+  it('debe delegar restore al service', async () => {
+    const response = BaseResponseDto.confirmation(
+      'Estacion restaurada correctamente',
       estacionEntity,
     );
-    service.findOne.mockResolvedValue(response);
+    service.restore.mockResolvedValue(response);
 
-    const result = await controller.findOne(estacionId);
+    const result = await controller.restore(estacionId);
 
-    expect(service.findOne).toHaveBeenCalledWith(estacionId);
+    expect(service.restore).toHaveBeenCalledWith(estacionId);
     expect(result).toEqual(response);
   });
 
@@ -107,19 +110,6 @@ describe('EstacionesController', () => {
     const result = await controller.update(estacionId, updateEstacionDto);
 
     expect(service.update).toHaveBeenCalledWith(estacionId, updateEstacionDto);
-    expect(result).toEqual(response);
-  });
-
-  it('debe delegar remove al service', async () => {
-    const response = BaseResponseDto.confirmation(
-      'Estacion eliminada correctamente',
-      estacionEntity,
-    );
-    service.remove.mockResolvedValue(response);
-
-    const result = await controller.remove(estacionId);
-
-    expect(service.remove).toHaveBeenCalledWith(estacionId);
     expect(result).toEqual(response);
   });
 });

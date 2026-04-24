@@ -8,11 +8,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
+import { Repository } from 'typeorm';
+import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 import { CreateRutaDto } from './dto/create-ruta.dto';
 import { UpdateRutaDto } from './dto/update-ruta.dto';
-import { Repository } from 'typeorm';
 import { Rutas } from './entities/Rutas';
-import { BaseResponseDto } from 'src/common/dto/base-response.dto';
 
 @Injectable()
 export class RutasService {
@@ -21,23 +21,22 @@ export class RutasService {
     private readonly rutaRepository: Repository<Rutas>,
   ) {}
 
-  //Metodo para crear una nueva ruta. Verifica que no exista una ruta con el mismo codigo antes de crearla.
   async create(createRutaDto: CreateRutaDto): Promise<BaseResponseDto<Rutas>> {
     try {
       const rutaExistente = await this.rutaRepository.findOne({
         where: { codigo: createRutaDto.codigo.trim() },
       });
 
-      // Si ya existe una ruta con el mismo codigo, lanza un error de conflicto
       if (rutaExistente) {
         throw new ConflictException(
           `Ya existe una ruta con el codigo ${createRutaDto.codigo}`,
         );
       }
 
-      // Crea la nueva ruta y la guarda en la base de datos
-
-      const nuevaRuta = this.rutaRepository.create(createRutaDto);
+      const nuevaRuta = this.rutaRepository.create({
+        ...createRutaDto,
+        isActive: true,
+      });
       const rutaGuardada = await this.rutaRepository.save(nuevaRuta);
 
       return BaseResponseDto.success('Ruta creada correctamente', rutaGuardada);
@@ -49,6 +48,7 @@ export class RutasService {
   async findAll(): Promise<BaseResponseDto<Rutas[]>> {
     try {
       const rutas = await this.rutaRepository.find({
+        where: { isActive: true },
         order: { id: 'ASC' },
       });
 
@@ -63,12 +63,13 @@ export class RutasService {
     }
   }
 
-  async findOne(code: string): Promise<BaseResponseDto<Rutas>> {
+  async findOne(id: string): Promise<BaseResponseDto<Rutas>> {
     try {
+      this.validateId(id);
 
-      const ruta = await this.findRutaByCodigo(code);
+      const ruta = await this.findRutaEntityOrFail(id);
 
-      return BaseResponseDto.success('Ruta encontrada', ruta.data!);
+      return BaseResponseDto.success('Ruta encontrada', ruta);
     } catch (error) {
       this.handleUnexpectedError(error, 'Error al obtener la ruta');
     }
@@ -80,9 +81,7 @@ export class RutasService {
         throw new BadRequestException('El codigo es obligatorio');
       }
 
-      const ruta = await this.rutaRepository.findOne({
-        where: { codigo: codigo.trim() },
-      });
+      const ruta = await this.findRutaByCodigoEntity(codigo.trim());
 
       if (!ruta) {
         throw new NotFoundException(
@@ -101,6 +100,7 @@ export class RutasService {
     updateRutaDto: UpdateRutaDto,
   ): Promise<BaseResponseDto<Rutas>> {
     try {
+      this.validateId(id);
 
       if (Object.keys(updateRutaDto).length === 0) {
         throw new BadRequestException(
@@ -108,25 +108,25 @@ export class RutasService {
         );
       }
 
-      const ruta = await this.findRutaByCodigo(id);
+      const ruta = await this.findRutaEntityOrFail(id);
 
       if (
         updateRutaDto.codigo &&
-        updateRutaDto.codigo.trim() !== ruta.data!.codigo
+        updateRutaDto.codigo.trim() !== ruta.codigo
       ) {
         const rutaConMismoCodigo = await this.rutaRepository.findOne({
           where: { codigo: updateRutaDto.codigo.trim() },
         });
 
-        if (rutaConMismoCodigo && rutaConMismoCodigo.id !== ruta.data!.id) {
+        if (rutaConMismoCodigo && rutaConMismoCodigo.id !== ruta.id) {
           throw new ConflictException(
             `Ya existe una ruta con el codigo ${updateRutaDto.codigo}`,
           );
         }
       }
 
-      this.rutaRepository.merge(ruta.data!, updateRutaDto);
-      const rutaActualizada = await this.rutaRepository.save(ruta.data!);
+      this.rutaRepository.merge(ruta, updateRutaDto);
+      const rutaActualizada = await this.rutaRepository.save(ruta);
 
       return BaseResponseDto.confirmation(
         'Ruta actualizada correctamente',
@@ -137,20 +137,73 @@ export class RutasService {
     }
   }
 
-  async remove(code: string): Promise<BaseResponseDto<Rutas>> {
+  async remove(id: string): Promise<BaseResponseDto<Rutas>> {
     try {
+      this.validateId(id);
 
-      const ruta = await this.findRutaByCodigo(code);
+      const ruta = await this.findRutaEntityOrFail(id);
+      ruta.isActive = false;
 
-      await this.rutaRepository.remove(ruta.data!);
+      const rutaDesactivada = await this.rutaRepository.save(ruta);
 
-      return BaseResponseDto.confirmation('Ruta eliminada correctamente', ruta!.data!);
+      return BaseResponseDto.confirmation(
+        'Ruta desactivada correctamente',
+        rutaDesactivada,
+      );
     } catch (error) {
-      this.handleUnexpectedError(error, 'Error al eliminar la ruta');
+      this.handleUnexpectedError(error, 'Error al desactivar la ruta');
     }
   }
 
+  async restore(id: string): Promise<BaseResponseDto<Rutas>> {
+    try {
+      this.validateId(id);
 
+      const ruta = await this.findRutaEntityOrFail(id, true);
+
+      if (ruta.isActive) {
+        throw new BadRequestException('La ruta ya se encuentra activa');
+      }
+
+      ruta.isActive = true;
+
+      const rutaRestaurada = await this.rutaRepository.save(ruta);
+
+      return BaseResponseDto.confirmation(
+        'Ruta restaurada correctamente',
+        rutaRestaurada,
+      );
+    } catch (error) {
+      this.handleUnexpectedError(error, 'Error al restaurar la ruta');
+    }
+  }
+
+  private async findRutaByCodigoEntity(codigo: string): Promise<Rutas | null> {
+    return this.rutaRepository.findOne({
+      where: { codigo, isActive: true },
+    });
+  }
+
+  private async findRutaEntityOrFail(
+    id: string,
+    includeInactive = false,
+  ): Promise<Rutas> {
+    const ruta = await this.rutaRepository.findOne({
+      where: includeInactive ? { id } : { id, isActive: true },
+    });
+
+    if (!ruta) {
+      throw new NotFoundException(`No se encontro la ruta con id ${id}`);
+    }
+
+    return ruta;
+  }
+
+  private validateId(id: string): void {
+    if (!id?.trim() || !isUUID(id)) {
+      throw new BadRequestException('El id debe ser un UUID valido');
+    }
+  }
 
   private handleUnexpectedError(error: unknown, message: string): never {
     if (error instanceof HttpException) {

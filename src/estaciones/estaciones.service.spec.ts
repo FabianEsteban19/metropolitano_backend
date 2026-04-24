@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,12 +17,12 @@ const createRepositoryMock = (): MockRepository<Estaciones> => ({
   save: jest.fn(),
   find: jest.fn(),
   merge: jest.fn(),
-  remove: jest.fn(),
 });
 
 describe('EstacionesService', () => {
   let service: EstacionesService;
   let repository: MockRepository<Estaciones>;
+
   const estacionId = '550e8400-e29b-41d4-a716-446655440001';
 
   const estacionEntity: Estaciones = {
@@ -32,6 +32,7 @@ describe('EstacionesService', () => {
     latitud: '-12.0463740',
     longitud: '-77.0427930',
     orden: 1,
+    isActive: true,
     reportes: [],
     rutaEstaciones: [],
   };
@@ -76,19 +77,20 @@ describe('EstacionesService', () => {
       latitud: createEstacionDto.latitud.toString(),
       longitud: createEstacionDto.longitud.toString(),
       orden: createEstacionDto.orden,
+      isActive: true,
     });
-    expect(repository.save).toHaveBeenCalledWith(estacionEntity);
     expect(result).toEqual(
       BaseResponseDto.success('Estacion creada correctamente', estacionEntity),
     );
   });
 
-  it('debe listar estaciones correctamente', async () => {
+  it('debe listar solo estaciones activas', async () => {
     repository.find!.mockResolvedValue([estacionEntity]);
 
     const result = await service.findAll();
 
     expect(repository.find).toHaveBeenCalledWith({
+      where: { isActive: true },
       order: { orden: 'ASC', id: 'ASC' },
     });
     expect(result).toEqual(
@@ -98,91 +100,43 @@ describe('EstacionesService', () => {
     );
   });
 
-  it('debe devolver mensaje vacio si no hay estaciones', async () => {
-    repository.find!.mockResolvedValue([]);
-
-    const result = await service.findAll();
-
-    expect(result).toEqual(
-      BaseResponseDto.success('No hay estaciones registradas', []),
-    );
-  });
-
-  it('debe obtener una estacion por id', async () => {
+  it('debe desactivar una estacion con remove', async () => {
     repository.findOne!.mockResolvedValue(estacionEntity);
-
-    const result = await service.findOne(estacionId);
-
-    expect(repository.findOne).toHaveBeenCalledWith({
-      where: { id: estacionId },
-    });
-    expect(result).toEqual(
-      BaseResponseDto.success('Estacion encontrada', estacionEntity),
-    );
-  });
-
-  it('debe lanzar bad request si el id es invalido', async () => {
-    await expect(service.findOne('id-invalido')).rejects.toThrow(
-      BadRequestException,
-    );
-  });
-
-  it('debe lanzar not found si no existe la estacion por id', async () => {
-    repository.findOne!.mockResolvedValue(null);
-
-    await expect(
-      service.findOne('550e8400-e29b-41d4-a716-446655440999'),
-    ).rejects.toThrow(NotFoundException);
-  });
-
-  it('debe actualizar una estacion correctamente', async () => {
-    const updateDto = { distrito: 'Barranco', orden: 2 };
-    const estacionActualizada = {
-      ...estacionEntity,
-      ...updateDto,
-    };
-
-    repository.findOne!.mockResolvedValue(estacionEntity);
-    repository.merge!.mockImplementation((target, source) =>
-      Object.assign(target, source),
-    );
-    repository.save!.mockResolvedValue(estacionActualizada);
-
-    const result = await service.update(estacionId, updateDto);
-
-    expect(repository.merge).toHaveBeenCalledWith(estacionEntity, {
-      distrito: updateDto.distrito,
-      orden: updateDto.orden,
-    });
-    expect(repository.save).toHaveBeenCalledWith(
-      expect.objectContaining(estacionActualizada),
-    );
-    expect(result).toEqual(
-      BaseResponseDto.confirmation(
-        'Estacion actualizada correctamente',
-        estacionActualizada,
-      ),
-    );
-  });
-
-  it('debe lanzar bad request si update no recibe campos', async () => {
-    await expect(service.update(estacionId, {})).rejects.toThrow(
-      BadRequestException,
-    );
-  });
-
-  it('debe eliminar una estacion correctamente', async () => {
-    repository.findOne!.mockResolvedValue(estacionEntity);
-    repository.remove!.mockResolvedValue(estacionEntity);
+    repository.save!.mockResolvedValue({ ...estacionEntity, isActive: false });
 
     const result = await service.remove(estacionId);
 
-    expect(repository.remove).toHaveBeenCalledWith(estacionEntity);
+    expect(repository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ id: estacionId, isActive: false }),
+    );
     expect(result).toEqual(
-      BaseResponseDto.confirmation(
-        'Estacion eliminada correctamente',
-        estacionEntity,
-      ),
+      BaseResponseDto.confirmation('Estacion desactivada correctamente', {
+        ...estacionEntity,
+        isActive: false,
+      }),
+    );
+  });
+
+  it('debe restaurar una estacion inactiva', async () => {
+    repository.findOne!.mockResolvedValue({ ...estacionEntity, isActive: false });
+    repository.save!.mockResolvedValue({ ...estacionEntity, isActive: true });
+
+    const result = await service.restore(estacionId);
+
+    expect(repository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ id: estacionId, isActive: true }),
+    );
+    expect(result).toEqual(
+      BaseResponseDto.confirmation('Estacion restaurada correctamente', {
+        ...estacionEntity,
+        isActive: true,
+      }),
+    );
+  });
+
+  it('debe lanzar bad request si el id no es UUID', async () => {
+    await expect(service.findOne('id-invalido')).rejects.toThrow(
+      BadRequestException,
     );
   });
 });

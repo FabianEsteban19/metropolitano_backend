@@ -1,5 +1,6 @@
 import { Buses } from "src/buses/entities/Buses";
 import { RutaEstaciones } from "src/ruta_estaciones/entities/RutaEstaciones";
+import { Viajes } from "src/viajes/entities/Viajes";
 import {
   Column,
   Entity,
@@ -49,9 +50,15 @@ export class Rutas {
   @Column("integer", { name: "frecuencia_min", default: () => "5" })
   frecuenciaMin!: number;
 
+  @Column("boolean", { name: "is_active", default: () => "true" })
+  isActive!: boolean;
+
   @OneToMany(() => Buses, (buses) => buses.ruta)
   buses!: Buses[];
 
   @OneToMany(() => RutaEstaciones, (rutaEstaciones) => rutaEstaciones.ruta)
   rutaEstaciones!: RutaEstaciones[];
+
+  @OneToMany(() => Viajes, (viajes) => viajes.ruta)
+  viajes!: Viajes[];
 }

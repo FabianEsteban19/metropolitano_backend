@@ -7,6 +7,8 @@ import { ReportesModule } from './reportes/reportes.module';
 import { RutaEstacionesModule } from './ruta_estaciones/ruta_estaciones.module';
 import { RutasModule } from './rutas/rutas.module';
 import { UsuarioModule } from './usuario/usuario.module';
+import { ViajeEstacionesModule } from './viaje_estaciones/viaje_estaciones.module';
+import { ViajesModule } from './viajes/viajes.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -31,7 +33,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           : undefined,
       entities: [__dirname + '/**/entities/*{.ts,.js}'],
       synchronize: false, // Crea las tablas automáticamente - SOLO para desarrollo
-    }), BusesModule, EstacionesModule, ReportesModule, RutaEstacionesModule, RutasModule, UsuarioModule,
+    }),
+    BusesModule,
+    EstacionesModule,
+    ReportesModule,
+    RutaEstacionesModule,
+    RutasModule,
+    UsuarioModule,
+    ViajesModule,
+    ViajeEstacionesModule,
     
   ],
   controllers: [AppController],

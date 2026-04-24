@@ -1,5 +1,6 @@
 import { Reportes } from "src/reportes/entities/Reportes";
 import { RutaEstaciones } from "src/ruta_estaciones/entities/RutaEstaciones";
+import { ViajeEstaciones } from "src/viaje_estaciones/entities/ViajeEstaciones";
 import {
   Column,
   Entity,
@@ -29,9 +30,15 @@ export class Estaciones {
   @Column("integer", { name: "orden" })
   orden!: number;
 
+  @Column("boolean", { name: "is_active", default: () => "true" })
+  isActive!: boolean;
+
   @OneToMany(() => Reportes, (reportes) => reportes.estacion)
   reportes!: Reportes[];
 
   @OneToMany(() => RutaEstaciones, (rutaEstaciones) => rutaEstaciones.estacion)
   rutaEstaciones!: RutaEstaciones[];
+
+  @OneToMany(() => ViajeEstaciones, (viajeEstaciones) => viajeEstaciones.estacion)
+  viajeEstaciones!: ViajeEstaciones[];
 }
